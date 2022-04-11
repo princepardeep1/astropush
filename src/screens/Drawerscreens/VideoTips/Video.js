@@ -1,0 +1,184 @@
+import React, { useEffect } from 'react';
+import {
+  FlatList,
+  Image,
+  ImageBackground,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { moderateScale } from 'react-native-size-matters';
+import YoutubePlayer from 'react-native-youtube-iframe';
+import { fonts, icons } from '../../../../assets';
+import { Header } from '../../../components/common/Header';
+import { colors } from '../../../utilities/constants';
+import styles from './styles';
+import {useDispatch, useSelector} from 'react-redux';
+import { getvideo } from '../../../store/actions';
+
+
+const DATA = [
+  {
+    title: 'Navigation your Lokhai App ',
+    data: [
+      'Setting up you profile',
+      'Adding Friends',
+      'Posting a Catch report',
+      'Using Data Feeds',
+      'Using Photo Sharing',
+      'News and Video Tips',
+      'Lokahi Intro Video',
+    ],
+  },
+  {
+    title: 'Rod and Reel',
+    data: ['Mounting the Reel'],
+  },
+  {
+    title: 'Lures',
+    data: ['Lure Head Selection', 'Lure Skirt Selection', 'Hook Selection'],
+  },
+  {
+    title: 'Terminal Rigging',
+    data: ['Creating a Double Line With a Bimini Twist'],
+  },
+  {
+    title: 'Angling',
+    data: ['Angling from the Chair Part 1', 'Angling from the Chair Part 2'],
+  },
+  {
+    title: 'Leadering',
+    data: ['Lokhai NothernLights Leadring'],
+  },
+  {
+    title: 'Gaffing',
+    data: ['Lokhai Kona Gaffing'],
+  },
+  {
+    title: 'Check out our YouTube Channels',
+    data: ['Angel Coach 123-Tim Tucker', 'Reel Adventures Hawaii'],
+  },
+];
+
+const videoArr = [
+  { videoId: 'i3mgx2W7Cok', title: 'Posting a Catch report' },
+  { videoId: 'JmSXo0XdWoA', title: 'Lokhai Kona Gaffing' },
+  { videoId: 'wop3B3bsSx8', title: 'Lokhai NothernLights Leadring' },
+];
+
+const Item = ({ title }) => (
+  <TouchableOpacity style={styles.item}>
+    <Image source={icons.ic_photoVideoPlayBT} />
+    <Text style={styles.title}>{title}</Text>
+  </TouchableOpacity>
+);
+
+const Video = ({ navigation }) => {
+
+  let auth = useSelector(state => state.auth);
+  let app = useSelector(state => state.app);
+
+  console.log(auth, 'auth>>>>>>>>>>>>', app, 'app>>>>>>>>>>>>>>>>');
+
+  const dispatch = useDispatch();
+ 
+  useEffect(() => {
+    console.log('in useEfectof news>>>>>>>>>>>.');
+    const unsubscribe = navigation.addListener('focus', () => {
+      videofunc();
+    });
+    return unsubscribe;
+  }, [navigation]);
+
+  //get news taken list
+  function videofunc() {
+    let token = auth && auth?.userDetails?.access_token;
+    dispatch(getvideo(token));
+  }
+
+  const _renderView = ({ item, index }) => (
+    <TouchableOpacity
+    // style={styles.item}
+    // onPress={() => navigation.navigate('VideoTips', {videoId: item.videoId})}
+    >
+      <View
+        style={{
+          flexDirection: 'row',
+          padding: 5,
+          justifyContent: 'space-around',
+        }}>
+        <Image
+          source={icons.ic_photoVideoPlayBT}
+          style={{
+            height: moderateScale(25),
+            width: moderateScale(35),
+            borderRadius: 10,
+          }}
+        />
+        <Text style={styles.title}>{item.title}</Text>
+      </View>
+
+      <YoutubePlayer
+        height={220}
+        play={false}
+        videoId={item?.video_id}
+      // onChangeState={onStateChange}
+      />
+    </TouchableOpacity>
+  );
+  return (
+    <ImageBackground
+      source={icons.ic_signup_bg}
+      style={{ flex: 1, height: '100%' }}>
+      <SafeAreaView style={styles.container}>
+        <Header
+          containerStyle={{
+            backgroundColor: 'transparent',
+            height: moderateScale(60),
+          }}
+          title={'Video Tips'}
+          titleStyle={{ fontFamily: fonts.bold }}
+          leftIconSource={icons.ic_back_white}
+          leftButtonStyle={{
+            tintColor: colors.white1,
+          }}
+          onLeftPress={() => {
+            navigation.goBack();
+          }}
+        />
+        {/* <SectionList
+        sections={DATA}
+        keyExtractor={(item, index) => item + index}
+        renderItem={({item}) => <Item title={item} />}
+        renderSectionHeader={({section: {title}}) => (
+          <Text style={styles.header} numberOfLines={1} ellipsizeMode="tail">
+            {title}
+          </Text>
+        )}
+      /> */}
+
+        <FlatList
+          extraData={app?.allVideolist}
+          data={app?.allVideolist}
+          renderItem={_renderView}
+          keyExtractor={(item, index) => 'key' + index}
+          ListEmptyComponent={() =>
+            app?.allVideolist >= 0 && <Text style={{}}>No video found</Text>
+          }
+        // refreshControl={
+        //   <RefreshControl
+        //     refreshing={user.loading}
+        //     onRefresh={_onRefresh.bind(this)}
+        //     title="Pull to refresh"
+        //     tintColor={colors.white1}
+        //     titleColor={colors.white1}
+        //   />
+        // }
+        />
+      </SafeAreaView>
+    </ImageBackground>
+  );
+};
+
+export default Video;
